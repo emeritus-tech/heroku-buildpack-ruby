@@ -1234,13 +1234,13 @@ params = CGI.parse(uri.query || "")
       precompile.invoke(env: rake_env)
       if precompile.success?
         puts "Asset precompilation completed (#{"%.2f" % precompile.time}s)"
+        @cache.store public_assets_folder
+        @cache.store default_assets_cache
 
         puts "Cleaning assets"
         rake.task("assets:clean").invoke(env: rake_env)
 
         cleanup_assets_cache
-        @cache.store public_assets_folder
-        @cache.store default_assets_cache
       else
         precompile_fail(precompile.output)
       end

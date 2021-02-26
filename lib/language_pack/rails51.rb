@@ -3,17 +3,6 @@ require 'language_pack'
 require 'language_pack/rails5'
 
 class LanguagePack::Rails51 < LanguagePack::Rails5
-  ASSET_PATHS = %w[
-    public/packs
-    ~/.yarn-cache
-    ~/.cache/yarn
-  ]
-
-  ASSET_CACHE_PATHS = %w[
-    node_modules
-    tmp/cache/webpacker
-  ]
-
   # @return [Boolean] true if it's a Rails 5.1.x app
   def self.use?
     instrument "rails51.use" do
@@ -50,8 +39,8 @@ class LanguagePack::Rails51 < LanguagePack::Rails5
             puts "Cleaning assets"
             rake.task("assets:clean").invoke(env: rake_env)
 
-            cleanup_assets_cache
             store_asset_cache if store_cache?
+            cleanup_assets_cache
           else
             precompile_fail(precompile.output)
           end
@@ -64,36 +53,43 @@ class LanguagePack::Rails51 < LanguagePack::Rails5
       env('CI_NODE_INDEX').to_i == (env('CI_NODE_TOTAL').to_i - 1)
     end
 
+    def node_modules_folder
+      "node_modules"
+    end
+
+    def public_packs_folder
+      "public/packs"
+    end
+
+    def public_packs_test_folder
+      "public/packs-test"
+    end
+
+    def webpacker_cache_folder
+      "tmp/cache/webpacker"
+    end
 
     def load_asset_cache
       puts "Loading asset cache"
       start = Time.now
-
-      paths = (self.class::ASSET_PATHS + self.class::ASSET_CACHE_PATHS)
-      paths.each { |path| @cache.load path }
+      @cache.load_without_overwrite public_assets_folder
+      @cache.load default_assets_cache
+      @cache.load_without_overwrite public_packs_folder
+      @cache.load_without_overwrite public_packs_test_folder
+      @cache.load node_modules_folder
+      @cache.load webpacker_cache_folder
       puts "Took #{Time.now - start}s loading asset cache"
     end
 
     def store_asset_cache
       puts "Storing asset cache"
       start = Time.now
-
-      paths = (self.class::ASSET_PATHS + self.class::ASSET_CACHE_PATHS)
-      paths.each { |path| @cache.store path }
+      @cache.store public_assets_folder
+      @cache.store default_assets_cache
+      @cache.store public_packs_folder
+      @cache.store public_packs_test_folder
+      @cache.store node_modules_folder
+      @cache.store webpacker_cache_folder
       puts "Took #{Time.now - start}s storing asset cache"
-    end
-
-    def cleanup
-      # does not call super because it would return if default_assets_cache was missing
-      #   child classes should call super and should not use a return statement
-      return if assets_compile_enabled?
-
-      puts "Removing non-essential asset cache directories"
-
-      FileUtils.remove_dir(default_assets_cache) if Dir.exist?(default_assets_cache)
-
-      self.class::ASSET_CACHE_PATHS.each do |path|
-        FileUtils.remove_dir(path) if Dir.exist?(path)
-      end
     end
 end
