@@ -23,6 +23,7 @@ class LanguagePack::Ruby
         create_database_yml
         install_binaries
         prepare_tests
+        run_assets_precompile_rake_task
       end
       setup_profiled(ruby_layer_path: "$HOME", gem_layer_path: "$HOME") # $HOME is set to /app at run time
       super
@@ -31,7 +32,7 @@ class LanguagePack::Ruby
 
   private
   def db_prepare_test_rake_tasks
-    ["db:schema:load", "db:migrate"].map {|name| rake.task(name) }
+    ["db:test:purge", "db:create", "db:structure:dump"].map {|name| rake.task(name) }
   end
 
   def prepare_tests

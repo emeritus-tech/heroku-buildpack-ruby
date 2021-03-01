@@ -57,7 +57,7 @@ FILE
     structure_load = rake.task("db:structure:load_if_sql")
     db_migrate     = rake.task("db:migrate")
 
-    return [] if db_migrate.not_defined?
+    return []
 
     if schema_load.not_defined? && structure_load.not_defined?
       result = detect_schema_format

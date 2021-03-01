@@ -32,6 +32,8 @@ class LanguagePack::Cache
 
     path ||= from
     clear path
+    puts "origin: #{from} - destination: #{@cache_base + path}"
+    puts "number of files: #{Dir[File.join(from, '**', '*')].count { |file| File.file?(file) }}"
     copy from, (@cache_base + path)
   end
 
@@ -51,6 +53,8 @@ class LanguagePack::Cache
     return unless @cache_base
 
     dest ||= path
+    puts "origin: #{@cache_base + path} - destination: #{dest}"
+    puts "number of files: #{Dir[File.join(@cache_base + path, '**', '*')].count { |file| File.file?(file) }}"
     copy (@cache_base + path), dest
   end
 
@@ -58,6 +62,8 @@ class LanguagePack::Cache
     return unless @cache_base
 
     dest ||= path
+    puts "origin: #{@cache_base + path} - destination: #{dest}"
+    puts "number of files: #{Dir[File.join(@cache_base + path, '**', '*')].count { |file| File.file?(file) }}"
     copy (@cache_base + path), dest, '-a -n'
   end
 
